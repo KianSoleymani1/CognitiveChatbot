@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cognitive Assessment</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Cognitive Assessment</h1>
+        <p>Please answer the following questions. Your score will be displayed at the end.</p>
+
+        <form id="assessmentForm">
+            <div class="question">
+                <label>1. Orientation: What is today's date?</label>
+                <input type="text" name="q1" required>
+            </div>
+
+            <div class="question">
+                <label>2. Language: Choose the correct synonym for "happy":</label>
+                <select name="q2" required>
+                    <option value="">--Select--</option>
+                    <option value="joyful">Joyful</option>
+                    <option value="angry">Angry</option>
+                    <option value="sad">Sad</option>
+                    <option value="tired">Tired</option>
+                </select>
+            </div>
+
+            <div class="question">
+                <label>3. Reasoning: Which number comes next in the sequence: 2, 4, 6, ?</label>
+                <input type="number" name="q3" required>
+            </div>
+
+            <div class="question">
+                <label>4. Visuospatial: Select the shape that completes the pattern:</label>
+                <div class="options">
+                    <input type="radio" id="circle" name="q4" value="circle" required>
+                    <label for="circle">Circle</label>
+                    <input type="radio" id="square" name="q4" value="square">
+                    <label for="square">Square</label>
+                    <input type="radio" id="triangle" name="q4" value="triangle">
+                    <label for="triangle">Triangle</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label>5. Executive Function: Choose the color that comes first in the rainbow:</label>
+                <select name="q5" required>
+                    <option value="">--Select--</option>
+                    <option value="red">Red</option>
+                    <option value="orange">Orange</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="green">Green</option>
+                </select>
+            </div>
+
+            <button type="submit">Submit</button>
+        </form>
+
+        <div id="results" class="hidden">
+            <h2>Your Score</h2>
+            <p id="score"></p>
+            <canvas id="progressChart"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
