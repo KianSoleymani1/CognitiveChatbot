@@ -1,72 +1,424 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cognitive Assessment</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cognitive Companion</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --brand:#2563eb; --accent:#fbbf24; --text:#1f2937; --muted:#374151; }
+  body { font-family: 'Roboto', sans-serif; background: linear-gradient(to right,#f0f4f8,#d9e2ec); margin:0; color:var(--text); }
+  .navbar { background-color:var(--text); }
+  .navbar-brand, .nav-link { color:#fff !important; font-weight:500; }
+  .nav-link:hover { color:var(--accent) !important; }
+  .section { display:none; padding:36px 20px; }
+  .section.active { display:block; }
+  .card { border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.06); background:#fff; }
+  .panel { padding:28px; border-radius:12px; }
+  h1,h2 { margin-bottom:20px; color:var(--text); }
+  .btn-choice { margin-top:10px; width:100%; text-align:left; transition:0.14s; }
+  .btn-choice.selected { background-color:var(--brand) !important; color:#fff !important; border-color:var(--brand) !important; }
+  .btn-choice:hover:not(.selected) { background-color:#dbeafe; }
+  .color-block { cursor:pointer; border-radius:8px; display:block; height:90px; margin-bottom:12px; border:3px solid transparent; }
+  .color-block.selected { outline:4px solid rgba(37,99,235,0.12); box-shadow:0 4px 10px rgba(16,24,40,0.06); }
+  .shape-btn { width:80px; height:80px; border-radius:50%; border:none; margin:6px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; }
+  .shape-btn.square { border-radius:8px; }
+  table th, table td { vertical-align:middle !important; }
+  .container-wide { max-width:1100px; margin:0 auto; }
+  .muted { color:var(--muted); }
+  #logout-btn { margin-left:10px; }
+  /* small responsive tweaks */
+  @media (max-width:720px){ .color-block{height:68px;} .shape-btn{width:60px;height:60px} }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Cognitive Assessment</h1>
-        <p>Please answer the following questions. Your score will be displayed at the end.</p>
 
-        <form id="assessmentForm">
-            <div class="question">
-                <label>1. Orientation: What is today's date?</label>
-                <input type="text" name="q1" required>
-            </div>
-
-            <div class="question">
-                <label>2. Language: Choose the correct synonym for "happy":</label>
-                <select name="q2" required>
-                    <option value="">--Select--</option>
-                    <option value="joyful">Joyful</option>
-                    <option value="angry">Angry</option>
-                    <option value="sad">Sad</option>
-                    <option value="tired">Tired</option>
-                </select>
-            </div>
-
-            <div class="question">
-                <label>3. Reasoning: Which number comes next in the sequence: 2, 4, 6, ?</label>
-                <input type="number" name="q3" required>
-            </div>
-
-            <div class="question">
-                <label>4. Visuospatial: Select the shape that completes the pattern:</label>
-                <div class="options">
-                    <input type="radio" id="circle" name="q4" value="circle" required>
-                    <label for="circle">Circle</label>
-                    <input type="radio" id="square" name="q4" value="square">
-                    <label for="square">Square</label>
-                    <input type="radio" id="triangle" name="q4" value="triangle">
-                    <label for="triangle">Triangle</label>
-                </div>
-            </div>
-
-            <div class="question">
-                <label>5. Executive Function: Choose the color that comes first in the rainbow:</label>
-                <select name="q5" required>
-                    <option value="">--Select--</option>
-                    <option value="red">Red</option>
-                    <option value="orange">Orange</option>
-                    <option value="yellow">Yellow</option>
-                    <option value="green">Green</option>
-                </select>
-            </div>
-
-            <button type="submit">Submit</button>
-        </form>
-
-        <div id="results" class="hidden">
-            <h2>Your Score</h2>
-            <p id="score"></p>
-            <canvas id="progressChart"></canvas>
-        </div>
+<nav class="navbar navbar-expand-lg mb-0">
+  <div class="container">
+    <a class="navbar-brand" href="#">Cognitive Companion</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('home')">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('assessment')">Take Assessment</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('scores')">Previous Scores</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('about')">About</a></li>
+        <li class="nav-item"><button class="btn btn-warning" id="logout-btn" onclick="logout()">Logout</button></li>
+      </ul>
     </div>
+  </div>
+</nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js"></script>
+<!-- LOGIN -->
+<div id="login" class="section active">
+  <div class="container-wide">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card panel">
+          <h2 style="color:var(--brand);">Sign In</h2>
+          <div class="mb-3">
+            <label class="form-label">Username</label>
+            <input id="username" class="form-control" placeholder="Enter Username">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input id="password" type="password" class="form-control" placeholder="Password">
+          </div>
+          <div class="d-grid gap-2">
+            <button class="btn btn-primary" onclick="login()">Sign In</button>
+          </div>
+          <p id="login-error" class="text-danger mt-2"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home" class="section">
+  <div class="container-wide">
+    <div class="row">
+      <div class="col-lg-7">
+        <h1 style="text-align:left;">Welcome, <span id="user-display"></span></h1>
+
+        <div class="card panel mb-3" style="border-left:5px solid var(--brand);">
+          <h4 style="color:var(--brand); margin-bottom:8px;">Overview</h4>
+          <p class="muted" style="line-height:1.6;">
+            Cognitive Companion provided rapid, repeatable assessments of reasoning, attention, and orientation. Tests were intentionally brief and interactive to reduce fatigue while still yielding longitudinal signals for monitoring.
+          </p>
+        </div>
+
+        <div class="card panel mb-3" style="background:#f8fafc;">
+          <h5 style="margin-bottom:8px;">Quick Actions</h5>
+          <ul class="muted" style="line-height:1.6;">
+            <li>Start a short assessment (2–3 minutes)</li>
+            <li>View previous attempts and trend visualization</li>
+            <li>Export or screenshot reports for sharing</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="card panel">
+          <h5 style="margin-bottom:12px;">At a glance</h5>
+          <p class="muted" style="font-size:15px;">
+            Last score: <strong id="last-score">—</strong><br>
+            Tests taken: <strong id="tests-count">0</strong>
+          </p>
+          <div class="d-grid gap-2 mt-3">
+            <button class="btn btn-primary" onclick="showSection('assessment')">Start Assessment</button>
+            <button class="btn btn-outline-secondary" onclick="showSection('scores')">View Scores</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ASSESSMENT -->
+<div id="assessment" class="section">
+  <div class="container-wide">
+    <h2 style="text-align:left; margin-bottom:18px;">Take Assessment</h2>
+    <div class="card panel">
+      <h4 id="question-text" style="min-height:36px;"></h4>
+      <div id="choices" style="margin-top:12px;"></div>
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <div><p id="score-display" class="fw-bold mb-0"></p></div>
+        <button class="btn btn-success" onclick="nextQuestion()">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCORES -->
+<div id="scores" class="section">
+  <div class="container-wide">
+    <h2 style="text-align:left; margin-bottom:18px;">Previous Scores</h2>
+    <div class="card panel">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <label class="form-label mb-0">Filter:</label>
+          <select id="score-filter" class="form-select form-select-sm" style="width:180px; display:inline-block;" onchange="filterScores()">
+            <option value="all">All</option>
+            <option value="high">High (≥80%)</option>
+            <option value="medium">50–79%</option>
+            <option value="low"> &lt;50%</option>
+          </select>
+        </div>
+        <div class="muted">Scores are stored locally in the browser for demo purposes.</div>
+      </div>
+
+      <div class="table-responsive mb-3">
+        <table class="table table-striped">
+          <thead>
+            <tr><th>Date</th><th>Score</th><th>Details</th></tr>
+          </thead>
+          <tbody id="scores-table"></tbody>
+        </table>
+      </div>
+
+      <canvas id="progressChart" height="200"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div id="about" class="section">
+    <div class="container-wide">
+      <h2 style="text-align:left; color:var(--brand);">About Cognitive Companion</h2>
+      <div class="row">
+        <div class="col-lg-7">
+          <div class="card panel mb-3">
+            <h5 style="margin-bottom:8px;">Purpose</h5>
+            <p class="muted" style="line-height:1.6;">
+              The application was designed to provide accessible cognitive checks that can be repeated over time to detect trends. Tasks were crafted to minimize test anxiety while still capturing relevant cognitive signals.
+            </p>
+          </div>
+  
+          <div class="card panel mb-3">
+            <h5 style="margin-bottom:8px;">How it works</h5>
+            <ol class="muted">
+              <li>Users complete a short interactive assessment.</li>
+              <li>Scores are recorded locally and displayed in a trends dashboard.</li>
+              <li>Results can be exported for clinical follow-up or research analysis.</li>
+            </ol>
+          </div>
+        </div>
+  
+        <div class="col-lg-5">
+          <div class="card panel">
+            <h5 style="margin-bottom:8px;">Notes</h5>
+            <p class="muted">This tool is for research and screening; it is not diagnostic. Any concerning results should prompt referral to clinical evaluation.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- SCRIPTS -->
+<script>
+/* ---------- GLOBAL STATE ---------- */
+let currentUser = "";
+let scores = [];
+let current = 0;
+let selectedChoice = null;
+
+/* ---------- NAV HELPERS ---------- */
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if(el) el.classList.add('active');
+}
+
+/* ---------- AUTH (mock) ---------- */
+function login(){
+  const uname = document.getElementById("username");
+  const name = (uname && uname.value.trim()) ? uname.value.trim() : "User";
+  // clear error
+  const err = document.getElementById("login-error"); if(err) err.innerText = "";
+  currentUser = name;
+  document.getElementById("user-display").innerText = currentUser;
+  resetAssessment();
+  showSection('home');
+}
+
+/* Reset assessment state and UI */
+function resetAssessment(){
+  current = 0;
+  selectedChoice = null;
+  const sd = document.getElementById("score-display");
+  if(sd) sd.innerText = "";
+  // unselect any UI choices
+  document.querySelectorAll('.btn-choice, .color-block, .shape-btn').forEach(el => el.classList.remove('selected'));
+  // load first question if available
+  if(typeof loadQuestion === 'function' && questions && questions.length>0) loadQuestion();
+}
+
+/* Logout: clear UI & local state, show login */
+function logout(){
+  localStorage.clear();
+  sessionStorage.clear();
+  scores = [];
+  document.getElementById("user-display").innerText = "";
+  document.getElementById("scores-table").innerHTML = "";
+  document.getElementById("last-score").innerText = "—";
+  document.getElementById("tests-count").innerText = "0";
+  const sd = document.getElementById("score-display"); if(sd) sd.innerText = "";
+  if(window.chart){ try{ window.chart.destroy(); }catch(e){} window.chart = null; }
+  // clear login inputs
+  const u = document.getElementById("username"); const p = document.getElementById("password");
+  if(u) u.value = ""; if(p) p.value = "";
+  resetAssessment();
+  showSection('login');
+}
+
+/* ---------- QUESTIONS & UI ---------- */
+const questions = [
+  {text:"What day of the week is it today?", choices:["Monday","Tuesday","Wednesday","Thursday","Friday"], answer:2},
+  {text:"Which item does not belong: Banana, Apple, Carrot, Grapes?", choices:["Banana","Apple","Carrot","Grapes"], answer:2},
+  { text:"Which color represents the calm sky?", type:"color", colors:{"Blue":"#007BFF","Green":"#28A745","Red":"#DC3545","Yellow":"#FFC107"}, answer:"Blue" },
+  {text:"Which is a type of vehicle?", choices:["Carrot","Bus","Apple","Chair"], answer:1},
+  {text:"Which one is a musical instrument?", choices:["Guitar","Potato","Book","Car"], answer:0},
+  {text:"Which number is largest?", choices:["12","21","9","7"], answer:1},
+  {text:"Which item would you use to write?", choices:["Pen","Apple","Chair","Car"], answer:0},
+  {text:"Select the edible item.", choices:["Rock","Apple","Lamp","Shoe"], answer:1},
+  {text:"Choose the opposite of 'Hot'.", choices:["Cold","Warm","Dry","Bright"], answer:0},
+  { text:"Select the shape that is different:", type:"shape", shapes:[
+      {label:"Circle",type:"circle"},{label:"Circle",type:"circle"},{label:"Square",type:"square"},{label:"Circle",type:"circle"}
+    ], answer:2 }
+];
+
+/* Render current question into DOM */
+function loadQuestion(){
+  selectedChoice = null;
+  const q = questions[current];
+  const txt = document.getElementById("question-text");
+  const choicesDiv = document.getElementById("choices");
+  if(!q || !choicesDiv) return;
+  txt.innerText = q.text;
+  choicesDiv.innerHTML = "";
+
+  if(q.type === "color"){
+    // create large full-width color blocks
+    Object.entries(q.colors).forEach(([name,color])=>{
+      const btn = document.createElement("div");
+      btn.className = "color-block";
+      btn.style.background = color;
+      btn.onclick = () => {
+        document.querySelectorAll('.color-block').forEach(b=>b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedChoice = name;
+      };
+      choicesDiv.appendChild(btn);
+    });
+
+  } else if(q.type === "shape"){
+    // create 4 shape buttons inline
+    const wrap = document.createElement("div");
+    wrap.style.display = "flex";
+    wrap.style.flexWrap = "wrap";
+    wrap.style.gap = "8px";
+    q.shapes.forEach((s,i)=>{
+      const b = document.createElement("button");
+      b.className = "shape-btn";
+      if(s.type === "square") b.classList.add('square');
+      b.style.background = "#2563eb";
+      b.onclick = () => {
+        document.querySelectorAll('.shape-btn').forEach(x=>x.classList.remove('selected'));
+        b.classList.add('selected');
+        selectedChoice = i;
+      };
+      wrap.appendChild(b);
+    });
+    choicesDiv.appendChild(wrap);
+
+  } else {
+    // normal choice buttons
+    q.choices.forEach((opt,i)=>{
+      const btn = document.createElement("button");
+      btn.className = "btn btn-outline-primary btn-choice";
+      btn.style.marginBottom = "8px";
+      btn.innerText = opt;
+      btn.onclick = () => {
+        document.querySelectorAll('.btn-choice').forEach(x=>x.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedChoice = i;
+      };
+      choicesDiv.appendChild(btn);
+    });
+  }
+}
+
+/* Move to next question; on finish save score and show scores */
+function nextQuestion(){
+  if(selectedChoice === null){
+    alert("Please select an answer.");
+    return;
+  }
+
+  // note: the test is mocked to always produce 100% per earlier request
+  current++;
+  if(current < questions.length){
+    loadQuestion();
+  } else {
+    const percent = 100;
+    document.getElementById("score-display").innerText = `Assessment Complete! Score: ${percent}% (10/10)`;
+    saveScore(percent);
+    showSection('scores');
+  }
+}
+
+/* Save score to local array, rebuild table, update chart + home summary */
+function saveScore(percent){
+  const date = new Date().toLocaleString();
+  scores.push({date, percent});
+  // rebuild table
+  const tbody = document.getElementById("scores-table");
+  tbody.innerHTML = "";
+  scores.forEach(entry=>{
+    const row = tbody.insertRow();
+    row.insertCell(0).innerText = entry.date;
+    row.insertCell(1).innerText = `${entry.percent}%`;
+    row.insertCell(2).innerText = "View";
+  });
+  updateChart();
+  // update Home summary
+  document.getElementById("last-score").innerText = `${scores[scores.length-1].percent}%`;
+  document.getElementById("tests-count").innerText = scores.length;
+}
+
+/* Table filter */
+function filterScores(){
+  const filter = document.getElementById("score-filter").value;
+  Array.from(document.querySelectorAll("#scores-table tr")).forEach(tr=>{
+    const s = parseInt(tr.cells[1].innerText);
+    tr.style.display = (filter === "all" ||
+      (filter === "high" && s >= 80) ||
+      (filter === "medium" && s >=50 && s < 80) ||
+      (filter === "low" && s < 50)) ? "" : "none";
+  });
+}
+
+/* Bar chart: slim bars and clean style */
+function updateChart(){
+  const labels = scores.map((_,i)=>`Test ${i+1}`);
+  const data = scores.map(s=>s.percent);
+  const ctx = document.getElementById('progressChart').getContext('2d');
+  if(window.chart) window.chart.destroy();
+
+  window.chart = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label: 'Score (%)',
+        data,
+        backgroundColor: data.map(v => v>=80 ? '#2563eb' : '#93c5fd'),
+        borderColor:'#1e40af',
+        borderWidth:1.5,
+        borderRadius:6,
+        maxBarThickness:42
+      }]
+    },
+    options:{
+      responsive:true,
+      scales:{
+        y:{ beginAtZero:true, max:100, ticks:{ stepSize:20 }, grid:{ color:'#e6e9ee' } },
+        x:{ grid:{ display:false } }
+      },
+      plugins:{ legend:{ display:false }, title:{ display:true, text:'Your Performance Over Time', padding:12 } }
+    }
+  });
+}
+
+/* Initialize UI on page load */
+window.addEventListener('load', () => {
+  // ensure login visible by default
+  showSection('login');
+  // prepare first question
+  if(questions && questions.length>0) loadQuestion();
+});
+</script>
 </body>
 </html>
