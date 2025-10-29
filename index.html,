@@ -50,7 +50,6 @@
   </div>
 </nav>
 
-<!-- LOGIN -->
 <div id="login" class="section active">
   <div class="container-wide">
     <div class="row justify-content-center">
@@ -75,7 +74,6 @@
   </div>
 </div>
 
-<!-- HOME -->
 <div id="home" class="section">
   <div class="container-wide">
     <div class="row">
@@ -116,7 +114,6 @@
   </div>
 </div>
 
-<!-- ASSESSMENT -->
 <div id="assessment" class="section">
   <div class="container-wide">
     <h2 style="text-align:left; margin-bottom:18px;">Take Assessment</h2>
@@ -131,7 +128,6 @@
   </div>
 </div>
 
-<!-- SCORES -->
 <div id="scores" class="section">
   <div class="container-wide">
     <h2 style="text-align:left; margin-bottom:18px;">Previous Scores</h2>
@@ -163,7 +159,6 @@
   </div>
 </div>
 
-<!-- ABOUT -->
 <div id="about" class="section">
     <div class="container-wide">
       <h2 style="text-align:left; color:var(--brand);">About Cognitive Companion</h2>
@@ -196,22 +191,18 @@
     </div>
   </div>
 
-<!-- SCRIPTS -->
 <script>
-/* ---------- GLOBAL STATE ---------- */
 let currentUser = "";
 let scores = [];
 let current = 0;
 let selectedChoice = null;
 
-/* ---------- NAV HELPERS ---------- */
 function showSection(id){
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);
   if(el) el.classList.add('active');
 }
 
-/* ---------- AUTH (mock) ---------- */
 function login(){
   const uname = document.getElementById("username");
   const name = (uname && uname.value.trim()) ? uname.value.trim() : "User";
@@ -223,7 +214,6 @@ function login(){
   showSection('home');
 }
 
-/* Reset assessment state and UI */
 function resetAssessment(){
   current = 0;
   selectedChoice = null;
@@ -235,7 +225,6 @@ function resetAssessment(){
   if(typeof loadQuestion === 'function' && questions && questions.length>0) loadQuestion();
 }
 
-/* Logout: clear UI & local state, show login */
 function logout(){
   localStorage.clear();
   sessionStorage.clear();
@@ -253,7 +242,6 @@ function logout(){
   showSection('login');
 }
 
-/* ---------- QUESTIONS & UI ---------- */
 const questions = [
   {text:"What day of the week is it today?", choices:["Monday","Tuesday","Wednesday","Thursday","Friday"], answer:2},
   {text:"Which item does not belong: Banana, Apple, Carrot, Grapes?", choices:["Banana","Apple","Carrot","Grapes"], answer:2},
@@ -269,7 +257,6 @@ const questions = [
     ], answer:2 }
 ];
 
-/* Render current question into DOM */
 function loadQuestion(){
   selectedChoice = null;
   const q = questions[current];
@@ -330,14 +317,12 @@ function loadQuestion(){
   }
 }
 
-/* Move to next question; on finish save score and show scores */
 function nextQuestion(){
   if(selectedChoice === null){
     alert("Please select an answer.");
     return;
   }
 
-  // note: the test is mocked to always produce 100% per earlier request
   current++;
   if(current < questions.length){
     loadQuestion();
@@ -349,7 +334,6 @@ function nextQuestion(){
   }
 }
 
-/* Save score to local array, rebuild table, update chart + home summary */
 function saveScore(percent){
   const date = new Date().toLocaleString();
   scores.push({date, percent});
@@ -368,7 +352,6 @@ function saveScore(percent){
   document.getElementById("tests-count").innerText = scores.length;
 }
 
-/* Table filter */
 function filterScores(){
   const filter = document.getElementById("score-filter").value;
   Array.from(document.querySelectorAll("#scores-table tr")).forEach(tr=>{
@@ -380,7 +363,6 @@ function filterScores(){
   });
 }
 
-/* Bar chart: slim bars and clean style */
 function updateChart(){
   const labels = scores.map((_,i)=>`Test ${i+1}`);
   const data = scores.map(s=>s.percent);
@@ -412,7 +394,6 @@ function updateChart(){
   });
 }
 
-/* Initialize UI on page load */
 window.addEventListener('load', () => {
   // ensure login visible by default
   showSection('login');
