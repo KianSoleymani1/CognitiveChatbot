@@ -10,7 +10,6 @@ const correctAnswers = {
     q5: "red"
 };
 
-// Store previous attempts in localStorage
 let attempts = JSON.parse(localStorage.getItem('attempts')) || [];
 
 form.addEventListener('submit', function(e) {
